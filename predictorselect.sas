@@ -6,12 +6,9 @@ data characteristicsPrd (keep = unitid control iclevel hloffer locale instcat c2
  by unitid;
 run;
 
-/**proc format cntlin=ipeds.ipedsformats;
-run;**/
-
 proc sql;
  create table AidPrd as
- select unitid, (scfa2/uagrntn) as GrantRate format=percentn8.2, (uagrntt/scfa2) as GrantAvg, 
+ select unitid, (uagrntn/scfa2) as GrantRate format=percentn8.2, (uagrntt/scfa2) as GrantAvg, 
         (upgrntn/scfa2) as PellRate format=percentn8.2, (ufloann/scfa2) as LoanRate format=percentn8.2, (ufloant/scfa2) as LoanAvg     
  from ipeds.aid
  ;
@@ -23,18 +20,18 @@ data TuitionCostsPrd (keep = unitid tuition1--boardamt);
 run;
 
 proc sql;
- create table SalPrd as
- select salaries.unitid, (sa09mot/sa09mct) as AvgSalary, (scfa2/sa09mct) as StuFacRatio      
- from ipeds.salaries inner join ipeds.aid
- on salaries.unitid eq aid.unitid
- ;
+   create table SalPrd as
+   select 
+       salaries.unitid, 
+       sum(sa09mot) / sum(sa09mct) as AvgSalary, 
+       mean(scfa2) / sum(sa09mct) as StuFacRatio format=comma5.1
+   from ipeds.salaries 
+   inner join ipeds.aid
+   on salaries.unitid = aid.unitid
+   group by salaries.unitid;
 quit;
 
 data ipedsmerged;
  merge  IPEDS.gradrates characteristicsPrd AidPrd tuitioncostsPrd SalPrd;
  by unitid;
-run;
-
-PROC SORT DATA= ipedsmerged out=ipedsmerge4dsorted nodupkey;
-       by unitid;
 run;
