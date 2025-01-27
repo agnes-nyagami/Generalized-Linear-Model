@@ -14,7 +14,7 @@ proc sql;
  ;
 quit;
 
-data TuitionCostsPrd (keep = unitid tuition1--boardamt);
+data TuitionCostsPrd (keep =unitid tuition1--boardamt);
  set ipeds.tuitionandcosts;
  by unitid;
 run;
